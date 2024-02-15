@@ -47,7 +47,9 @@ axios.get('https://hook.us1.make.com/rx33x2dsf5v8fkq0aj1r3c4onapvj6ka').then(asy
   });
 
   let orderData = reportData[0].Order;
-
+  let refundData = reportData[0].Refund;
+  let otherData = reportData[0].OtherTransaction;
+  
   for (const Order of orderData) {
     let FulfillmentIDs = [];
     for (const Fulfillment of Order.Fulfillment) {
@@ -108,13 +110,121 @@ axios.get('https://hook.us1.make.com/rx33x2dsf5v8fkq0aj1r3c4onapvj6ka').then(asy
 
     const OrderID = await base("Transaction Data").create({
       "AmazonOrderID": Order.AmazonOrderID[0],
+      "TransactionType": "order",
       "MerchantOrderID": Order.MerchantOrderID[0],
       "ShipmentID": Order.ShipmentID[0],
       "MarketplaceName": Order.MarketplaceName[0],
       "Fulfillment": FulfillmentIDs
     });
 
-    console.log('@@@@@@', OrderID.id)
+    console.log('Created---Order')
+  }
+
+  for (const Refund of refundData) {
+    let FulfillmentIDs = [];
+    for (const Fulfillment of Refund.Fulfillment) {
+      let ItemIDs = [];
+      for (const Item of Fulfillment.AdjustedItem) {
+        let ItemPriceIDs = [];
+        let ItemFeesIDs = [];
+        for(const ItemPrice of Item.ItemPriceAdjustments) {
+          let ComponentIDs = []
+          for(const Component of ItemPrice.Component) {
+            const ComponentID = await base("Component").create({
+              "Type": Component.Type[0],
+              "Amount": Number(Component.Amount[0]['_'])
+            });
+            await ComponentIDs.push(ComponentID.id);
+          }
+          const ItemPriceID = await base("ItemPrice").create({
+            "Component": ComponentIDs
+          });
+          await ItemPriceIDs.push(ItemPriceID.id);
+        }
+
+        for (const ItemFees of Item.ItemFeeAdjustments) {
+          let FeeIDs = []
+          for (const Fee of ItemFees.Fee) {
+            const FeeID = await base("Fee").create({
+              "Type": Fee.Type[0],
+              "Amount": Number(Fee.Amount[0]['_'])
+            });
+            await FeeIDs.push(FeeID.id);
+          }
+          const ItemFeesID = await base("ItemFees").create({
+            "Fee": FeeIDs
+          });
+          await ItemFeesIDs.push(ItemFeesID.id);
+        }
+        const ItemID = await base("Item").create({
+          "AmazonOrderItemCode": Number(Item.AmazonOrderItemCode[0]),
+          "SKU": Item.SKU[0],
+          "Quantity": Number(Item.MerchantAdjustmentItemID[0]),
+          "ItemPrice": ItemPriceIDs,
+          "ItemFees": ItemFeesIDs
+        });
+        await ItemIDs.push(ItemID.id);
+      }
+
+      const FulfillmentID = await base("Fulfillment").create({
+        "MerchantFulfillmentID": Fulfillment.MerchantFulfillmentID[0],
+        "PostedDate": Fulfillment.PostedDate[0],
+        "Item": ItemIDs
+      });
+      await FulfillmentIDs.push(FulfillmentID.id);
+    }
+
+    const RefundID = await base("Transaction Data").create({
+      "AmazonOrderID": Refund.AmazonOrderID[0],
+      "TransactionType": "refund",
+      "MerchantOrderID": Refund.MerchantOrderID[0],
+      "ShipmentID": Refund.AdjustmentID[0],
+      "MarketplaceName": Refund.MarketplaceName[0],
+      "Fulfillment": FulfillmentIDs
+    });
+
+    console.log('Created---Refund')
+  }
+
+  for (const Other of otherData) {
+    let ItemFeesIDs = [];
+
+    if(Other.Fees) {
+      for (const ItemFees of Other.Fees) {
+        let FeeIDs = []
+        for (const Fee of ItemFees.Fee) {
+          const FeeID = await base("Fee").create({
+            "Type": Fee.Type[0],
+            "Amount": Number(Fee.Amount[0]['_'])
+          });
+          await FeeIDs.push(FeeID.id);
+        }
+        const ItemFeesID = await base("ItemFees").create({
+          "Fee": FeeIDs
+        });
+        await ItemFeesIDs.push(ItemFeesID.id);
+      }
+    }
+
+    const ItemID = await base("Item").create({
+      "Quantity": Number(Other.Amount[0]),
+      "ItemFees": ItemFeesIDs
+    });
+
+    const FulfillmentID = await base("Fulfillment").create({
+      "PostedDate": Other.PostedDate[0],
+      "Item": [ItemID.id]
+    });
+
+    const OtherID = await base("Transaction Data").create({
+      "AmazonOrderID": Other.AmazonOrderID ? Other.AmazonOrderID[0] : "",
+      "TransactionType": Other.TransactionType[0],
+      "MerchantOrderID": Other.TransactionID[0],
+      "ShipmentID": Other.ShipmentID ? Other.ShipmentID[0] : "",
+      "Fulfillment": [FulfillmentID.id]
+    });
+
+    console.log('Created--', Other.TransactionType)
   }
 
 });
