@@ -38,10 +38,8 @@ app.use('/users', usersRouter);
 // });
 
 axios.get('https://hook.us1.make.com/rx33x2dsf5v8fkq0aj1r3c4onapvj6ka').then(async res => {
-
-  const xmlData = res.data;
   let reportData = [];
-  await xml2js.parseString(xmlData, (err, result) => {
+  await xml2js.parseString(res.data, (err, result) => {
     if (err) throw err;
     reportData = result.AmazonEnvelope.Message[0].SettlementReport;
   });
