@@ -31,8 +31,10 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
 
-cron.schedule("28 2 * * *", async () => {
+
+cron.schedule("35 3 * * *", async () => {
   console.log("======Get Daily Report======")
+
   axios.get('https://hook.us1.make.com/rx33x2dsf5v8fkq0aj1r3c4onapvj6ka').then(async res => {
   let reportData = [];
   await xml2js.parseString(res.data, (err, result) => {
@@ -224,7 +226,9 @@ cron.schedule("28 2 * * *", async () => {
   console.log("=========== All Updated! ============")
 
 });
+  
 });
+
 
 
 
