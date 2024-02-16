@@ -237,7 +237,6 @@ axios.get('https://hook.us1.make.com/rx33x2dsf5v8fkq0aj1r3c4onapvj6ka').then(asy
   await xml2js.parseString(res.data, (err, result) => {
     if (err) throw err;
     reportData = result.AmazonEnvelope.Message;
-    // console.log(result.AmazonEnvelope.Message[0].Order[0].AmazonOrderID)
   });
 
   for (const Order of reportData) {
@@ -261,9 +260,11 @@ axios.get('https://hook.us1.make.com/rx33x2dsf5v8fkq0aj1r3c4onapvj6ka').then(asy
       'product name': orderData.OrderItem[0].ProductName[0],
       'quantity': Number(orderData.OrderItem[0].Quantity[0]),
     });
+
+    console.log(`Created ${orderData.AmazonOrderID[0]}`)
   }
 
-  console.log("Process Ended...\n")
+  console.log("\nProcess Ended...\n")
 
 });
 
