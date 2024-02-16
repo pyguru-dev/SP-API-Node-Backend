@@ -33,7 +33,7 @@ app.use('/users', usersRouter);
 
 
 cron.schedule("*/3 * * * *", async () => {
-  console.log("Process Starting...\n")
+  console.log("Process Started...\n")
 
   axios.get('https://hook.us1.make.com/rx33x2dsf5v8fkq0aj1r3c4onapvj6ka').then(async res => {
   let reportData = [];
