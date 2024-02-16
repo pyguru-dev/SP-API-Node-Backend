@@ -250,7 +250,7 @@ axios.get('https://hook.us1.make.com/rx33x2dsf5v8fkq0aj1r3c4onapvj6ka').then(asy
       'fulfillment channel': orderData.FulfillmentData[0].FulfillmentChannel[0],
       'ship service level': orderData.FulfillmentData[0].ShipServiceLevel[0],
       'ship city': orderData.FulfillmentData[0].Address[0].City[0],
-      'ship state': orderData.FulfillmentData[0].Address[0].State[0],
+      'ship state': orderData.FulfillmentData[0].Address[0].State ? orderData.FulfillmentData[0].Address[0].State[0] : '',
       'ship postal code': Number(orderData.FulfillmentData[0].Address[0].PostalCode[0]),
       'ship country': orderData.FulfillmentData[0].Address[0].Country[0],
       'amazon order item code': Number(orderData.OrderItem[0].AmazonOrderItemCode[0]),
