@@ -52,7 +52,7 @@ function csvStringToJson(csvString) {
 }
 
 
-cron.schedule("*/3 * * * *", async () => {
+cron.schedule("0 4 * * *", async () => {
   console.log("Process Started...\n")
 
 /* Settlement Data */
@@ -249,7 +249,7 @@ cron.schedule("*/3 * * * *", async () => {
 
   // });
 
-  
+
 /* Order Transaction Data */
   axios.get('https://hook.us1.make.com/rx33x2dsf5v8fkq0aj1r3c4onapvj6ka').then(async res => {
 
@@ -296,6 +296,7 @@ cron.schedule("*/3 * * * *", async () => {
     console.log("Process Ended...\n");
   });  
 });
+ 
 
 /*   Informed Listing Data    */
 
